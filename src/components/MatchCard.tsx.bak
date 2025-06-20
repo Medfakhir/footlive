@@ -1,0 +1,57 @@
+import React from 'react';
+import { Match } from '@/types';
+import MatchCard from './MatchCard';
+import ErrorMessage from './ErrorMessage';
+import LoadingSpinner from './LoadingSpinner';
+
+interface MatchesListProps {
+  matches: Match[];
+  isLoading: boolean;
+  error: string | null;
+}
+
+const MatchesList: React.FC<MatchesListProps> = ({ matches, isLoading, error }) => {
+  // Group matches by competition
+  const matchesByCompetition = matches.reduce<Record<string, Match[]>>((acc, match) => {
+    if (!acc[match.competition]) {
+      acc[match.competition] = [];
+    }
+    acc[match.competition].push(match);
+    return acc;
+  }, {});
+
+  if (isLoading) {
+    return <LoadingSpinner message="Loading match data..." />;
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} />;
+  }
+
+  if (matches.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+        No matches found for today.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {Object.entries(matchesByCompetition).map(([competition, competitionMatches]) => (
+        <div key={competition} className="mb-6">
+          <div className="flex items-center mb-4 pb-2 border-b dark:border-gray-700">
+            <h2 className="text-xl font-bold">{competition}</h2>
+          </div>
+          <div className="space-y-3">
+            {competitionMatches.map((match) => (
+              <MatchCard key={`${match.matchId}-${match.startTime}`} match={match} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default MatchesList;

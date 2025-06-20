@@ -1,0 +1,15 @@
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm install && npx puppeteer browsers install chrome",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "functions": {
+    "src/app/api/**/*": {
+      "memory": 3008,
+      "maxDuration": 60
+    }
+  },
+  "env": {
+    "PUPPETEER_CACHE_DIR": "/tmp/puppeteer-cache"
+  }
+}
