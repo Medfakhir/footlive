@@ -6,12 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "deploy": "wrangler deploy",
-    "postinstall": "node -e \"try { require('fs').mkdirSync('/tmp/chromium', { recursive: true }); console.log('Created /tmp/chromium directory'); } catch (e) { console.error('Error creating directory:', e); }\""
+    "lint": "next lint"
   },
   "dependencies": {
-    "@sparticuz/chromium": "^137.0.1",
     "axios": "^1.10.0",
     "cheerio": "^1.1.0",
     "date-fns": "^4.1.0",
