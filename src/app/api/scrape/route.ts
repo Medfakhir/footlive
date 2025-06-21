@@ -28,11 +28,17 @@ export async function GET(request: Request) {
       console.log('Running on Vercel, using @sparticuz/chromium');
       // Setup for Vercel serverless environment
       try {
+        // Get the executable path for Chromium
+        const executablePath = await Chromium.executablePath('/tmp/chromium');
+        console.log('Chromium executable path:', executablePath);
+        
         browser = await puppeteer.launch({
           args: Chromium.args,
-          executablePath: await Chromium.executablePath(),
+          executablePath: executablePath,
           headless: true
         });
+        
+        console.log('Browser launched successfully in Vercel environment');
       } catch (error) {
         console.error('Error launching browser in Vercel:', error);
         throw error;
@@ -56,6 +62,7 @@ export async function GET(request: Request) {
           headless: true,
           args
         });
+        console.log('Browser launched successfully in local environment');
       } else {
         throw new Error('PUPPETEER_EXECUTABLE_PATH environment variable is not set');
       }
