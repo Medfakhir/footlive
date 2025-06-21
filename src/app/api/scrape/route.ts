@@ -34,17 +34,44 @@ export async function GET(request: Request) {
         const Chromium = ChromiumModule.default;
         console.log('Chromium imported successfully');
         
-        // Get the executable path for Chromium
-        const executablePath = await Chromium.executablePath('/tmp/chromium');
-        console.log('Chromium executable path:', executablePath);
+        // Create the directory if it doesn't exist
+        const fs = require('fs');
+        const chromiumPath = process.env.CHROMIUM_PATH || '/tmp/chromium';
+        console.log(`Using Chromium path: ${chromiumPath}`);
         
-        browser = await puppeteer.launch({
-          args: Chromium.args,
-          executablePath: executablePath,
-          headless: true
-        });
+        if (!fs.existsSync(chromiumPath)) {
+          console.log(`Creating ${chromiumPath} directory...`);
+          fs.mkdirSync(chromiumPath, { recursive: true });
+        }
         
-        console.log('Browser launched successfully in Vercel environment');
+        try {
+          // Get the executable path for Chromium
+          console.log('Getting Chromium executable path...');
+          const executablePath = await Chromium.executablePath(chromiumPath);
+          console.log('Chromium executable path:', executablePath);
+          
+          // Verify the executable path exists
+          if (!fs.existsSync(executablePath)) {
+            console.log(`Warning: Executable path ${executablePath} does not exist yet. Chromium may need to be extracted.`);
+          }
+         
+          browser = await puppeteer.launch({
+            args: [
+              ...Chromium.args,
+              '--disable-dev-shm-usage',
+              '--disable-setuid-sandbox',
+              '--no-sandbox',
+              '--disable-gpu'
+            ],
+            executablePath: executablePath,
+            headless: true
+          });
+          
+          console.log('Browser launched successfully in Vercel environment');
+         } catch (innerError) {
+          console.error('Error during Chromium setup:', innerError);
+          throw innerError;
+         }
       } catch (error) {
         console.error('Error launching browser in Vercel:', error);
         throw error;
