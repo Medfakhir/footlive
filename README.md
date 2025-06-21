@@ -1,6 +1,6 @@
-# ScoureFootball - Live Football Scores
+# ScoureFootball - Live Football Scores API
 
-A Next.js application that scrapes and displays live football scores from BeSoccer. The application uses Puppeteer for web scraping and displays matches grouped by competition.
+A Next.js application that scrapes and displays live football scores from BeSoccer. The application uses Puppeteer for web scraping and displays matches grouped by competition. It also provides a public API that can be integrated into other websites.
 
 ## Features
 
@@ -9,6 +9,8 @@ A Next.js application that scrapes and displays live football scores from BeSocc
 - Matches grouped by competition
 - Live status indicators (live, postponed, or scheduled time)
 - Responsive design with light/dark mode support
+- Public API with CORS support for external integration
+- Detailed match information including team logos and TV broadcast channels
 
 ## Tech Stack
 
@@ -94,6 +96,14 @@ If you encounter a "Could not find Chrome" error:
 ### Memory Issues on Vercel
 
 If you encounter memory issues on Vercel, you may need to adjust the memory allocation in `vercel.json`. The current configuration allocates 3008MB to API functions.
+
+## API Integration
+
+This project includes a public API that can be integrated into other websites. The API provides access to live football match data scraped from BeSoccer.
+
+For detailed API documentation, see [API_DOCUMENTATION.md](./API_DOCUMENTATION.md).
+
+A simple example of how to integrate the API into another website can be found in [example-integration.html](./example-integration.html).
 
 ## License
 

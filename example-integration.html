@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Matches Integration Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .date-selector {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .date-selector input {
+            padding: 8px;
+            margin-right: 10px;
+        }
+        .date-selector button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .date-selector button:hover {
+            background-color: #45a049;
+        }
+        .loading {
+            text-align: center;
+            margin: 20px 0;
+            font-style: italic;
+            color: #666;
+        }
+        .error {
+            color: #D32F2F;
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #FFEBEE;
+            border-radius: 4px;
+        }
+        .competitions {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .competition {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .competition-header {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #2196F3;
+            color: white;
+        }
+        .competition-header img {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            object-fit: contain;
+        }
+        .matches {
+            padding: 10px;
+        }
+        .match {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .match:last-child {
+            border-bottom: none;
+        }
+        .team {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+        .team.home {
+            justify-content: flex-end;
+            text-align: right;
+        }
+        .team.away {
+            justify-content: flex-start;
+            text-align: left;
+        }
+        .team img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+        }
+        .team.home img {
+            margin-left: 10px;
+        }
+        .team.away img {
+            margin-right: 10px;
+        }
+        .score {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px 10px;
+            margin: 0 15px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status {
+            font-size: 12px;
+            padding: 3px 6px;
+            border-radius: 3px;
+            margin-left: 10px;
+        }
+        .live {
+            background-color: #F44336;
+            color: white;
+        }
+        .postponed {
+            background-color: #FFC107;
+            color: black;
+        }
+        .tv-channels {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .no-matches {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Football Matches</h1>
+    
+    <div class="date-selector">
+        <input type="date" id="date-picker">
+        <button id="load-matches">Load Matches</button>
+    </div>
+    
+    <div id="matches-container">
+        <div class="loading">Loading matches...</div>
+    </div>
+
+    <script>
+        // Set today's date as the default value for the date picker
+        const today = new Date();
+        const formattedDate = today.toISOString().split('T')[0];
+        document.getElementById('date-picker').value = formattedDate;
+        
+        // Function to fetch matches from the API
+        async function fetchMatches(date) {
+            const apiUrl = `https://your-deployed-site.com/api/scrape?date=${date}`;
+            
+            try {
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return data.matches;
+            } catch (error) {
+                console.error('Error fetching matches:', error);
+                throw error;
+            }
+        }
+        
+        // Function to group matches by competition
+        function groupMatchesByCompetition(matches) {
+            const groupedMatches = {};
+            
+            matches.forEach(match => {
+                if (!groupedMatches[match.competition]) {
+                    groupedMatches[match.competition] = {
+                        name: match.competition,
+                        image: match.competitionImage,
+                        matches: []
+                    };
+                }
+                
+                groupedMatches[match.competition].matches.push(match);
+            });
+            
+            return Object.values(groupedMatches);
+        }
+        
+        // Function to render matches
+        function renderMatches(matches) {
+            const container = document.getElementById('matches-container');
+            
+            if (matches.length === 0) {
+                container.innerHTML = '<div class="no-matches">No matches found for this date</div>';
+                return;
+            }
+            
+            const groupedMatches = groupMatchesByCompetition(matches);
+            
+            let html = '<div class="competitions">';
+            
+            groupedMatches.forEach(competition => {
+                html += `
+                    <div class="competition">
+                        <div class="competition-header">
+                            ${competition.image ? `<img src="${competition.image}" alt="${competition.name}">` : ''}
+                            <h2>${competition.name}</h2>
+                        </div>
+                        <div class="matches">
+                `;
+                
+                competition.matches.forEach(match => {
+                    const statusClass = match.isLive ? 'live' : (match.isPostponed ? 'postponed' : '');
+                    const statusText = match.isLive ? 'LIVE' : (match.isPostponed ? 'Postponed' : match.matchTime);
+                    
+                    html += `
+                        <div class="match">
+                            <div class="team home">
+                                <span>${match.homeTeam}</span>
+                                ${match.homeTeamImage ? `<img src="${match.homeTeamImage}" alt="${match.homeTeam}">` : ''}
+                            </div>
+                            <div class="score">
+                                ${match.homeScore} - ${match.awayScore}
+                                <span class="status ${statusClass}">${statusText}</span>
+                            </div>
+                            <div class="team away">
+                                ${match.awayTeamImage ? `<img src="${match.awayTeamImage}" alt="${match.awayTeam}">` : ''}
+                                <span>${match.awayTeam}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    if (match.tvChannels && match.tvChannels.length > 0) {
+                        html += `
+                            <div class="tv-channels">
+                                TV: ${match.tvChannels.join(', ')}
+                            </div>
+                        `;
+                    }
+                });
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // Function to load matches
+        async function loadMatches() {
+            const container = document.getElementById('matches-container');
+            const date = document.getElementById('date-picker').value;
+            
+            container.innerHTML = '<div class="loading">Loading matches...</div>';
+            
+            try {
+                const matches = await fetchMatches(date);
+                renderMatches(matches);
+            } catch (error) {
+                container.innerHTML = `<div class="error">Error loading matches: ${error.message}</div>`;
+            }
+        }
+        
+        // Add event listener to the load button
+        document.getElementById('load-matches').addEventListener('click', loadMatches);
+        
+        // Load matches on page load
+        loadMatches();
+    </script>
+</body>
+</html>
