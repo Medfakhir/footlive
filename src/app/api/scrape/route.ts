@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Match } from '@/types';
 import puppeteer from 'puppeteer-core';
-import Chromium from '@sparticuz/chromium';
+// Chromium is dynamically imported in the Vercel environment section
 
 export async function GET(request: Request) {
   try {
@@ -28,6 +28,12 @@ export async function GET(request: Request) {
       console.log('Running on Vercel, using @sparticuz/chromium');
       // Setup for Vercel serverless environment
       try {
+        // Install Chromium during runtime
+        console.log('Installing Chromium...');
+        const ChromiumModule = await import('@sparticuz/chromium');
+        const Chromium = ChromiumModule.default;
+        console.log('Chromium imported successfully');
+        
         // Get the executable path for Chromium
         const executablePath = await Chromium.executablePath('/tmp/chromium');
         console.log('Chromium executable path:', executablePath);
