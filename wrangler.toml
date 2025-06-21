@@ -1,0 +1,20 @@
+name = "scoure-football"
+main = "./.next/server/app/api/scrape/route.js"
+compatibility_date = "2025-06-21"
+
+# Configure for Next.js application
+[build]
+  command = "npm run build"
+
+# Configure assets for the static files
+[site]
+  bucket = "./.next/static"
+
+# Configure environment variables
+[vars]
+  PUPPETEER_CACHE_DIR = "/tmp/puppeteer-cache"
+
+# Configure for higher resource limits due to Puppeteer usage
+[limits]
+  memory_mb = 1024
+  timeout_seconds = 60
