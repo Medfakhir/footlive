@@ -1,4 +1,4 @@
-name = "footlive"
+name = "scoure-football"
 main = "./worker.js"
 compatibility_date = "2025-06-21"
 compatibility_flags = ["nodejs_compat"]
