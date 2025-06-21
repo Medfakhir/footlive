@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     // Launch Puppeteer browser with configuration for both local and Vercel environments
     let executablePath: string;
     let args: string[];
-    let headless = true;
+    const headless = true;
     
     // Check if running on Vercel or locally
     if (process.env.VERCEL) {
