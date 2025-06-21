@@ -21,20 +21,26 @@ export async function GET(request: Request) {
     }
     
     // Launch Puppeteer browser with configuration for both local and Vercel environments
-    let executablePath: string;
-    let args: string[];
-    const headless = true;
+    let browser;
     
     // Check if running on Vercel or locally
     if (process.env.VERCEL) {
       console.log('Running on Vercel, using @sparticuz/chromium');
       // Setup for Vercel serverless environment
-      executablePath = await Chromium.executablePath();
-      args = Chromium.args;
+      try {
+        browser = await puppeteer.launch({
+          args: Chromium.args,
+          executablePath: await Chromium.executablePath(),
+          headless: true
+        });
+      } catch (error) {
+        console.error('Error launching browser in Vercel:', error);
+        throw error;
+      }
     } else {
       console.log('Running locally');
       // Setup for local development
-      args = [
+      const args = [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
@@ -45,17 +51,15 @@ export async function GET(request: Request) {
       // Add executable path if specified in environment variables
       if (process.env.PUPPETEER_EXECUTABLE_PATH) {
         console.log('Using local Chrome executable path');
-        executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+        browser = await puppeteer.launch({
+          executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+          headless: true,
+          args
+        });
       } else {
         throw new Error('PUPPETEER_EXECUTABLE_PATH environment variable is not set');
       }
     }
-    
-    const browser = await puppeteer.launch({
-      executablePath,
-      headless,
-      args
-    });
     
     const page = await browser.newPage();
     await page.setViewport({ width: 1366, height: 768 });
