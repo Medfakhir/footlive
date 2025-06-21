@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "postinstall": "node -e \"try { require('fs').mkdirSync('/tmp/chromium', { recursive: true }); console.log('Created /tmp/chromium directory'); } catch (e) { console.error('Error creating directory:', e); }\""
   },
   "dependencies": {
     "@sparticuz/chromium": "^137.0.1",

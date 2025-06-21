@@ -44,27 +44,77 @@ export async function GET(request: Request) {
           fs.default.mkdirSync(chromiumPath, { recursive: true });
         }
         
+        // Ensure the chromium directory has the right permissions
+        try {
+          console.log(`Setting permissions on ${chromiumPath} directory...`);
+          fs.default.chmodSync(chromiumPath, '755');
+          console.log('Directory permissions set successfully');
+        } catch (dirChmodError) {
+          console.error('Error setting directory permissions:', dirChmodError);
+        }
+        
         try {
           // Get the executable path for Chromium
           console.log('Getting Chromium executable path...');
-          const executablePath = await Chromium.executablePath(chromiumPath);
-          console.log('Chromium executable path:', executablePath);
+          let executablePath;
+          try {
+            // First try with the specified path
+            executablePath = await Chromium.executablePath(chromiumPath);
+            console.log('Chromium executable path:', executablePath);
+          } catch (pathError) {
+            console.error('Error getting executable path with custom path:', pathError);
+            
+            // Try without specifying a path as fallback
+            try {
+              console.log('Trying to get executable path without custom path...');
+              executablePath = await Chromium.executablePath();
+              console.log('Fallback Chromium executable path:', executablePath);
+            } catch (fallbackError) {
+              console.error('Error getting fallback executable path:', fallbackError);
+              throw new Error('Failed to get Chromium executable path using both methods');
+            }
+          }
           
           // Verify the executable path exists
           if (!fs.default.existsSync(executablePath)) {
             console.log(`Warning: Executable path ${executablePath} does not exist yet. Chromium may need to be extracted.`);
+          } else {
+            // Set executable permissions on the Chromium binary
+            console.log(`Setting executable permissions on ${executablePath}`);
+            try {
+              fs.default.chmodSync(executablePath, '755');
+              console.log('Permissions set successfully');
+            } catch (chmodError) {
+              console.error('Error setting permissions:', chmodError);
+            }
           }
          
+          // Additional debugging before launch
+          console.log('Launching browser with executable path:', executablePath);
+          console.log('Directory exists check:', fs.default.existsSync(chromiumPath));
+          console.log('Executable exists check:', fs.default.existsSync(executablePath));
+          
+          // Try to list files in the directory to verify access
+          try {
+            const files = fs.default.readdirSync(chromiumPath);
+            console.log(`Files in ${chromiumPath}:`, files);
+          } catch (readDirError) {
+            console.error(`Error reading directory ${chromiumPath}:`, readDirError);
+          }
+          
           browser = await puppeteer.launch({
             args: [
               ...Chromium.args,
               '--disable-dev-shm-usage',
               '--disable-setuid-sandbox',
               '--no-sandbox',
-              '--disable-gpu'
+              '--disable-gpu',
+              '--single-process',
+              '--no-zygote'
             ],
             executablePath: executablePath,
-            headless: true
+            headless: true,
+            dumpio: true // Log browser process stdout and stderr
           });
           
           console.log('Browser launched successfully in Vercel environment');

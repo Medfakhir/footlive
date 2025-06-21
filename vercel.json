@@ -12,6 +12,8 @@
   "env": {
     "PUPPETEER_CACHE_DIR": "/tmp/puppeteer-cache",
     "CHROMIUM_PATH": "/tmp/chromium",
-    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true"
+    "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD": "true",
+    "PUPPETEER_EXECUTABLE_PATH": "/tmp/chromium",
+    "VERCEL_FORCE_NO_BUILD_CACHE": "1"
   }
 }
