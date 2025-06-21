@@ -35,13 +35,13 @@ export async function GET(request: Request) {
         console.log('Chromium imported successfully');
         
         // Create the directory if it doesn't exist
-        const fs = require('fs');
+        const fs = await import('fs');
         const chromiumPath = process.env.CHROMIUM_PATH || '/tmp/chromium';
         console.log(`Using Chromium path: ${chromiumPath}`);
         
-        if (!fs.existsSync(chromiumPath)) {
+        if (!fs.default.existsSync(chromiumPath)) {
           console.log(`Creating ${chromiumPath} directory...`);
-          fs.mkdirSync(chromiumPath, { recursive: true });
+          fs.default.mkdirSync(chromiumPath, { recursive: true });
         }
         
         try {
@@ -51,7 +51,7 @@ export async function GET(request: Request) {
           console.log('Chromium executable path:', executablePath);
           
           // Verify the executable path exists
-          if (!fs.existsSync(executablePath)) {
+          if (!fs.default.existsSync(executablePath)) {
             console.log(`Warning: Executable path ${executablePath} does not exist yet. Chromium may need to be extracted.`);
           }
          
